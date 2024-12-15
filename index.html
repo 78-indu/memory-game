@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game with Blast</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f3f4f6;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-gap: 10px;
+            justify-content: center;
+            margin: 20px auto;
+        }
+
+        .card {
+            width: 100px;
+            height: 100px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .card.flipped {
+            background-color: #ffffff;
+            color: #000;
+            pointer-events: none;
+            transform: rotateY(180deg);
+        }
+
+        .blast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            color: red;
+            animation: explode 2s ease-in-out forwards;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(3);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Memory Game</h1>
+    <p>Match all pairs to win!</p>
+    <div class="game-board" id="gameBoard"></div>
+
+    <script>
+        const symbols = ['🍎', '🍌', '🍓', '🍇', '🍎', '🍌', '🍓', '🍇', '🍒', '🍍', '🍒', '🍍', '🍑', '🍉', '🍑', '🍉'];
+        let shuffledSymbols = [...symbols].sort(() => Math.random() - 0.5);
+        const gameBoard = document.getElementById('gameBoard');
+
+        let flippedCards = [];
+        let matchedPairs = 0;
+
+        // Initialize game board
+        function createBoard() {
+            shuffledSymbols.forEach(symbol => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.symbol = symbol;
+                card.textContent = '?'; // Hidden initially
+                card.addEventListener('click', flipCard);
+                gameBoard.appendChild(card);
+            });
+        }
+
+        // Flip card
+        function flipCard() {
+            if (flippedCards.length < 2) {
+                this.classList.add('flipped');
+                this.textContent = this.dataset.symbol;
+                flippedCards.push(this);
+
+                if (flippedCards.length === 2) {
+                    checkForMatch();
+                }
+            }
+        }
+
+        // Check if two flipped cards match
+        function checkForMatch() {
+            const [card1, card2] = flippedCards;
+            if (card1.dataset.symbol === card2.dataset.symbol) {
+                flippedCards = [];
+                matchedPairs++;
+                if (matchedPairs === symbols.length / 2) {
+                    setTimeout(displayBlast, 500);
+                }
+            } else {
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card1.textContent = '?';
+                    card2.classList.remove('flipped');
+                    card2.textContent = '?';
+                    flippedCards = [];
+                }, 1000);
+            }
+        }
+
+        // Display blast effect
+        function displayBlast() {
+            const blast = document.createElement('div');
+            blast.classList.add('blast');
+            blast.textContent = '🎉 BOOM! YOU WON! 🎉';
+            document.body.appendChild(blast);
+
+            setTimeout(() => {
+                blast.remove(); // Remove the effect after animation ends
+                alert('Congratulations! You Won!');
+                location.reload(); // Reload the game
+            }, 2000);
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>
